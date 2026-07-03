@@ -4,6 +4,8 @@ A security audit tool for your **Bitwarden** vault, inspired by the premium pass
 
 No data ever leaves your browser: no server, no API, no tracking.
 
+[Demo live](https://metanef.github.io/bitwarden-vault-audit)
+
 ![100% local](https://img.shields.io/badge/données-100%25%20locales-3fc98a)
 ![No dependencies](https://img.shields.io/badge/dépendances-aucune-4f7cff)
 ![MIT License](https://img.shields.io/badge/licence-MIT-8b90a3)
