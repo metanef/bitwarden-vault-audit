@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit de coffre-fort — 100% local</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12141c;
+    --bg-elevated: #1a1d29;
+    --surface: #1f2330;
+    --surface-hover: #262b3b;
+    --border: #2c3142;
+    --text: #e8eaf0;
+    --text-dim: #8b90a3;
+    --text-faint: #5b6072;
+    --accent: #4f7cff;
+    --accent-dim: #3a5cc9;
+    --accent-glow: rgba(79,124,255,0.18);
+    --danger: #f0546a;
+    --danger-dim: rgba(240,84,106,0.14);
+    --warning: #e8a13d;
+    --warning-dim: rgba(232,161,61,0.14);
+    --success: #3fc98a;
+    --success-dim: rgba(63,201,138,0.14);
+    --radius: 14px;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(79,124,255,0.08), transparent 40%),
+      radial-gradient(circle at 85% 15%, rgba(63,201,138,0.05), transparent 35%);
+  }
+
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand svg { flex-shrink: 0; }
+
+  .brand-text h1 {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-text p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+
+  .badge-local {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--success);
+    background: var(--success-dim);
+    border: 1px solid rgba(63,201,138,0.25);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+
+  .badge-local svg { width: 12px; height: 12px; }
+
+  /* ---------- Dropzone ---------- */
+
+  #dropzone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
+    padding: 64px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease, transform .15s ease;
+    position: relative;
+  }
+
+  #dropzone:hover, #dropzone.dragover {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  #dropzone.dragover { transform: scale(1.005); }
+
+  #dropzone .icon {
+    width: 52px; height: 52px;
+    margin: 0 auto 20px;
+    border-radius: 14px;
+    background: var(--accent-glow);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  #dropzone h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+
+  #dropzone p {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin: 0 0 20px;
+    line-height: 1.6;
+  }
+
+  #dropzone .hint {
+    font-size: 12.5px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .btn:hover { background: var(--accent-dim); }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .btn-ghost:hover { background: var(--surface); color: var(--text); border-color: var(--text-faint); }
+
+  #file-input { display: none; }
+
+  #error-msg {
+    display: none;
+    margin-top: 16px;
+    color: var(--danger);
+    background: var(--danger-dim);
+    border: 1px solid rgba(240,84,106,0.3);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13.5px;
+  }
+
+  /* ---------- Dashboard ---------- */
+
+  #dashboard { display: none; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .toolbar .filename {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .stat-card .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 12px;
+  }
+
+  .stat-card .value {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-card .value.danger { color: var(--danger); }
+  .stat-card .value.warning { color: var(--warning); }
+  .stat-card .value.ok { color: var(--success); }
+
+  .stat-card .sub {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 8px;
+  }
+
+  /* score gauge card */
+  .score-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .gauge { position: relative; width: 76px; height: 76px; flex-shrink: 0; }
+  .gauge svg { transform: rotate(-90deg); }
+  .gauge .track { fill: none; stroke: var(--border); stroke-width: 7; }
+  .gauge .fill { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray .8s ease; }
+  .gauge .score-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 700; font-size: 20px;
+  }
+
+  .score-text .label { margin-bottom: 6px; }
+  .score-text .verdict { font-size: 13px; color: var(--text-dim); max-width: 180px; line-height: 1.4; }
+
+  /* ---------- Recherche ---------- */
+
+  .search-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 28px;
+  }
+
+  .search-card .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 12px;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .search-input-wrap {
+    position: relative;
+    flex: 1;
+  }
+
+  .search-input-wrap svg.icon-search {
+    position: absolute;
+    left: 13px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-faint);
+    pointer-events: none;
+  }
+
+  #search-input {
+    width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 11px 42px 11px 38px;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  #search-input:focus { border-color: var(--accent); }
+  #search-input::placeholder { color: var(--text-faint); font-family: var(--font-body); }
+
+  #search-toggle {
+    position: absolute;
+    right: 10px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none;
+    color: var(--text-faint);
+    cursor: pointer;
+    display: flex;
+  }
+  #search-toggle:hover { color: var(--accent); }
+
+  #search-results { margin-top: 16px; }
+
+  #search-results .search-hint {
+    font-size: 13px;
+    color: var(--text-faint);
+  }
+
+  #search-results .search-summary {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  #search-results .search-summary.match { color: var(--danger); }
+  #search-results .search-summary.nomatch { color: var(--success); }
+
+  /* ---------- Âge & progression ---------- */
+
+  .age-tag {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+  .age-tag.age-mid { color: var(--warning); }
+  .age-tag.age-old { color: var(--danger); }
+
+  .fix-check {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: var(--text-faint);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .fix-check input {
+    accent-color: var(--success);
+    cursor: pointer;
+    width: 13px;
+    height: 13px;
+  }
+
+  .account-pill.fixed,
+  .weak-row.fixed {
+    opacity: 0.4;
+  }
+  .account-pill.fixed .name,
+  .weak-row.fixed .name {
+    text-decoration: line-through;
+  }
+
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .progress-top .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+  .progress-count {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .progress-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--success);
+    border-radius: 4px;
+    transition: width .3s ease;
+    width: 0%;
+  }
+
+  /* ---------- Sections ---------- */
+
+  .section { margin-bottom: 20px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .section-header .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot.danger { background: var(--danger); }
+  .dot.warning { background: var(--warning); }
+  .dot.accent { background: var(--accent); }
+
+  .section-header h3 {
+    font-family: var(--font-display);
+    font-size: 15.5px;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+  }
+
+  .section-header .count {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+
+  .section-header .chev {
+    color: var(--text-faint);
+    transition: transform .2s ease;
+  }
+  .section.open .chev { transform: rotate(90deg); }
+
+  .section-body {
+    display: none;
+    padding: 4px 4px 8px;
+  }
+  .section.open .section-body { display: block; }
+
+  .section.empty .section-header { opacity: 0.45; cursor: default; }
+
+  /* group cards (duplicates / reused logins) */
+  .group-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+  }
+
+  .group-card .group-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+
+  .secret-chip {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dim);
+  }
+
+  .secret-chip button {
+    background: none; border: none; color: var(--text-faint);
+    cursor: pointer; padding: 0; display: flex;
+  }
+  .secret-chip button:hover { color: var(--accent); }
+
+  .group-card .used-by {
+    font-size: 12px;
+    color: var(--text-faint);
+  }
+
+  .account-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .account-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 11px;
+    font-size: 13px;
+  }
+
+  .account-pill .name { font-weight: 500; }
+  .account-pill .user { color: var(--text-faint); font-family: var(--font-mono); font-size: 12px; }
+
+  /* weak password rows */
+  .weak-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .weak-row:last-child { border-bottom: none; }
+
+  .weak-row .info { flex: 1; min-width: 0; }
+  .weak-row .name { font-weight: 500; font-size: 14px; }
+  .weak-row .user { color: var(--text-faint); font-size: 12.5px; font-family: var(--font-mono); }
+
+  .strength-tag {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .strength-tag.s0, .strength-tag.s1 { background: var(--danger-dim); color: var(--danger); }
+  .strength-tag.s2 { background: var(--warning-dim); color: var(--warning); }
+
+  .strength-bar {
+    width: 70px; height: 5px; border-radius: 3px;
+    background: var(--border);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .strength-bar .fill { height: 100%; border-radius: 3px; }
+
+  .empty-state {
+    padding: 24px 4px;
+    color: var(--text-faint);
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  footer.note {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text-faint);
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 720px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .score-card { grid-column: 1 / -1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <rect width="34" height="34" rx="9" fill="#1f2330" stroke="#2c3142"/>
+        <path d="M17 8L24 11V16.5C24 21 21 24.5 17 26C13 24.5 10 21 10 16.5V11L17 8Z" stroke="#4f7cff" stroke-width="1.6" stroke-linejoin="round"/>
+        <circle cx="17" cy="16" r="2.2" fill="#4f7cff"/>
+        <path d="M17 18.2V21" stroke="#4f7cff" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">
+        <h1>Audit de coffre-fort</h1>
+        <p>Détection des mots de passe faibles, dupliqués et réutilisés</p>
+      </div>
+    </div>
+    <div class="badge-local">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" stroke="currentColor" stroke-width="2"/></svg>
+      100% local
+    </div>
+  </header>
+
+  <div id="dropzone">
+    <div class="icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0-11l-4 4m4-4l4 4M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="#4f7cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2>Glissez votre export Bitwarden ici</h2>
+    <p>Format JSON non chiffré, généré depuis Bitwarden<br>(Paramètres → Exporter des données)</p>
+    <button class="btn" type="button" id="browse-btn">Choisir un fichier</button>
+    <input type="file" id="file-input" accept=".json,application/json">
+    <div id="error-msg"></div>
+    <p class="hint" style="margin-top:24px;">Aucune donnée n'est envoyée sur un serveur — tout est traité dans votre navigateur.</p>
+  </div>
+
+  <div id="dashboard">
+    <div class="toolbar">
+      <span class="filename" id="filename-label"></span>
+      <button class="btn btn-ghost" id="reset-btn">Charger un autre fichier</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card score-card">
+        <div class="gauge">
+          <svg viewBox="0 0 76 76" width="76" height="76">
+            <circle class="track" cx="38" cy="38" r="32"></circle>
+            <circle class="fill" id="gauge-fill" cx="38" cy="38" r="32"></circle>
+          </svg>
+          <div class="score-num" id="gauge-num">–</div>
+        </div>
+        <div class="score-text">
+          <p class="label" style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;">Score du coffre-fort</p>
+          <p class="verdict" id="score-verdict">—</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <p class="label">Comptes analysés</p>
+        <div class="value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <p class="label">Mots de passe dupliqués</p>
+        <div class="value danger" id="stat-duplicates">0</div>
+        <p class="sub" id="stat-duplicates-sub"></p>
+      </div>
+      <div class="stat-card">
+        <p class="label">Mots de passe faibles</p>
+        <div class="value warning" id="stat-weak">0</div>
+      </div>
+    </div>
+
+    <div class="progress-card" id="progress-card">
+      <div class="progress-top">
+        <p class="label">Progression des corrections</p>
+        <span class="progress-count" id="progress-count">0 / 0</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="search-card">
+      <p class="label">Rechercher un mot de passe précis</p>
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <svg class="icon-search" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="password" id="search-input" placeholder="Colle ou tape un mot de passe...">
+          <button type="button" id="search-toggle" title="Afficher / masquer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="search-results"></div>
+    </div>
+
+    <div class="section" id="section-duplicates">
+      <div class="section-header" onclick="toggleSection('section-duplicates')">
+        <span class="dot danger"></span>
+        <h3>Mots de passe réutilisés</h3>
+        <span class="count" id="count-duplicates"></span>
+        <span class="chev">▸</span>
+      </div>
+      <div class="section-body" id="body-duplicates"></div>
+    </div>
+
+    <div class="section" id="section-weak">
+      <div class="section-header" onclick="toggleSection('section-weak')">
+        <span class="dot warning"></span>
+        <h3>Mots de passe faibles</h3>
+        <span class="count" id="count-weak"></span>
+        <span class="chev">▸</span>
+      </div>
+      <div class="section-body" id="body-weak"></div>
+    </div>
+
+    <div class="section" id="section-logins">
+      <div class="section-header" onclick="toggleSection('section-logins')">
+        <span class="dot accent"></span>
+        <h3>Identifiants réutilisés</h3>
+        <span class="count" id="count-logins"></span>
+        <span class="chev">▸</span>
+      </div>
+      <div class="section-body" id="body-logins"></div>
+    </div>
+
+    <footer class="note">
+      Cet outil ne stocke, n'envoie ni ne conserve aucune donnée. Fermez simplement l'onglet pour tout effacer.
+    </footer>
+  </div>
+
+</div>
+
+<script>
+  // ---------- Analyse des mots de passe ----------
+
+  const COMMON_PASSWORDS = new Set([
+    '123456','password','123456789','12345678','12345','1234567','1234567890',
+    'qwerty','azerty','abc123','password1','111111','123123','admin','welcome',
+    'motdepasse','soleil','monkey','letmein','football','iloveyou','000000',
+    'qwertyuiop','1q2w3e4r','starwars','dragon','master','login','princess'
+  ]);
+
+  function analyzePassword(pw) {
+    if (!pw) return { score: 0, label: 'Vide', entropy: 0 };
+    let charset = 0;
+    if (/[a-z]/.test(pw)) charset += 26;
+    if (/[A-Z]/.test(pw)) charset += 26;
+    if (/[0-9]/.test(pw)) charset += 10;
+    if (/[^a-zA-Z0-9]/.test(pw)) charset += 33;
+    const entropy = charset > 0 ? pw.length * Math.log2(charset) : 0;
+
+    let score;
+    if (COMMON_PASSWORDS.has(pw.toLowerCase()) || pw.length < 8) score = 0;
+    else if (entropy < 40) score = 1;
+    else if (entropy < 60) score = 2;
+    else if (entropy < 80) score = 3;
+    else score = 4;
+
+    const labels = ['Très faible', 'Faible', 'Correct', 'Fort', 'Très fort'];
+    return { score, label: labels[score], entropy: Math.round(entropy) };
+  }
+
+  function parseVault(text) {
+    let data;
+    try { data = JSON.parse(text); }
+    catch (e) { throw new Error("Le fichier n'est pas un JSON valide."); }
+
+    if (!data || !Array.isArray(data.items)) {
+      throw new Error("Ce fichier ne ressemble pas à un export Bitwarden (clé 'items' introuvable).");
+    }
+
+    const items = data.items
+      .filter(it => it && it.type === 1 && it.login && it.login.password)
+      .map(it => ({
+        id: it.id,
+        name: it.name || 'Sans nom',
+        username: (it.login.username || '').trim(),
+        password: it.login.password,
+        uri: (it.login.uris && it.login.uris[0] && it.login.uris[0].uri) || '',
+        revisionDate: it.revisionDate || null
+      }));
+
+    if (items.length === 0) {
+      throw new Error("Aucun identifiant (type 'login') trouvé dans ce fichier.");
+    }
+    return items;
+  }
+
+  function groupBy(arr, keyFn) {
+    const map = new Map();
+    arr.forEach(item => {
+      const key = keyFn(item);
+      if (!key) return;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(item);
+    });
+    return map;
+  }
+
+  function runAnalysis(items) {
+    items.forEach(it => { it.analysis = analyzePassword(it.password); });
+
+    const pwGroups = groupBy(items, i => i.password);
+    const duplicateGroups = [...pwGroups.values()].filter(g => g.length > 1);
+
+    const userGroups = groupBy(items, i => i.username.toLowerCase());
+    const reusedLoginGroups = [...userGroups.values()].filter(g => g.length > 1);
+
+    const weakItems = items
+      .filter(i => i.analysis.score <= 1)
+      .sort((a, b) => a.analysis.entropy - b.analysis.entropy);
+
+    const duplicateAccountCount = duplicateGroups.reduce((s, g) => s + g.length, 0);
+    const reusedAccountCount = reusedLoginGroups.reduce((s, g) => s + g.length, 0);
+
+    const total = items.length;
+    const weakRatio = weakItems.length / total;
+    const dupRatio = duplicateAccountCount / total;
+    const reuseRatio = reusedAccountCount / total;
+    const rawScore = 100 * (1 - (weakRatio * 0.5 + dupRatio * 0.35 + reuseRatio * 0.15));
+    const score = Math.max(0, Math.min(100, Math.round(rawScore)));
+
+    return { items, duplicateGroups, reusedLoginGroups, weakItems, score, duplicateAccountCount };
+  }
+
+  function formatAge(dateStr) {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return null;
+    const days = Math.floor((Date.now() - date.getTime()) / 86400000);
+    if (days < 0) return null;
+    let text;
+    if (days < 30) text = days <= 1 ? "aujourd'hui" : `il y a ${days} j`;
+    else if (days < 365) text = `il y a ${Math.floor(days / 30)} mois`;
+    else {
+      const years = Math.floor(days / 365);
+      text = `il y a ${years} an${years > 1 ? 's' : ''}`;
+    }
+    return { text, years: days / 365 };
+  }
+
+  function ageBadgeHtml(dateStr) {
+    const age = formatAge(dateStr);
+    if (!age) return '';
+    let cls = '';
+    if (age.years >= 3) cls = 'age-old';
+    else if (age.years >= 1.5) cls = 'age-mid';
+    return `<span class="age-tag ${cls}" title="Dernière modification de cet élément dans Bitwarden">${age.text}</span>`;
+  }
+
+  // ---------- Suivi des corrections ----------
+
+  function loadFixedIds() {
+    try {
+      const raw = localStorage.getItem('auditFixedIds');
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch (e) { return new Set(); }
+  }
+
+  function saveFixedIds() {
+    try { localStorage.setItem('auditFixedIds', JSON.stringify([...fixedIds])); }
+    catch (e) { /* stockage indisponible, on continue en mémoire seulement */ }
+  }
+
+  let fixedIds = loadFixedIds();
+  let flaggedIds = new Set();
+
+  function fixCheckHtml(id) {
+    const checked = fixedIds.has(id) ? 'checked' : '';
+    return `
+      <label class="fix-check">
+        <input type="checkbox" ${checked} onchange="toggleFixed('${id}')">
+        <span>Corrigé</span>
+      </label>`;
+  }
+
+  window.toggleFixed = function(id) {
+    if (fixedIds.has(id)) fixedIds.delete(id); else fixedIds.add(id);
+    saveFixedIds();
+    document.querySelectorAll(`[data-fix-id="${id}"]`).forEach(el => {
+      el.classList.toggle('fixed', fixedIds.has(id));
+      const cb = el.querySelector('input[type="checkbox"]');
+      if (cb) cb.checked = fixedIds.has(id);
+    });
+    updateProgress();
+  };
+
+  function updateProgress() {
+    const card = document.getElementById('progress-card');
+    const total = flaggedIds.size;
+    if (!total) { card.style.display = 'none'; return; }
+    const done = [...flaggedIds].filter(id => fixedIds.has(id)).length;
+    document.getElementById('progress-count').textContent = `${done} / ${total}`;
+    document.getElementById('progress-fill').style.width = `${Math.round((done / total) * 100)}%`;
+    card.style.display = 'block';
+  }
+
+  // ---------- Rendu ----------
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function maskPassword(pw) {
+    return '•'.repeat(Math.min(pw.length, 14));
+  }
+
+  function makeSecretChip(pw, id) {
+    return `
+      <span class="secret-chip" data-pw="${escapeHtml(pw)}" id="chip-${id}">
+        <span class="chip-text">${maskPassword(pw)}</span>
+        <button type="button" onclick="toggleReveal('chip-${id}')" title="Afficher / masquer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+        </button>
+      </span>`;
+  }
+
+  window.toggleReveal = function(chipId) {
+    const chip = document.getElementById(chipId);
+    const textEl = chip.querySelector('.chip-text');
+    const real = chip.dataset.pw;
+    const isMasked = textEl.textContent.includes('•');
+    textEl.textContent = isMasked ? real : maskPassword(real);
+  };
+
+  window.toggleSection = function(sectionId) {
+    const el = document.getElementById(sectionId);
+    if (el.classList.contains('empty')) return;
+    el.classList.toggle('open');
+  };
+
+  function renderScoreGauge(score) {
+    const r = 32, circumference = 2 * Math.PI * r;
+    const offset = circumference * (1 - score / 100);
+    const fillEl = document.getElementById('gauge-fill');
+    fillEl.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
+    fillEl.style.strokeDashoffset = offset;
+    let color = 'var(--danger)';
+    if (score >= 80) color = 'var(--success)';
+    else if (score >= 55) color = 'var(--warning)';
+    fillEl.style.stroke = color;
+    document.getElementById('gauge-num').textContent = score;
+
+    const verdictEl = document.getElementById('score-verdict');
+    if (score >= 80) verdictEl.textContent = 'Votre coffre-fort est globalement sain.';
+    else if (score >= 55) verdictEl.textContent = "Des points d'attention méritent d'être corrigés.";
+    else verdictEl.textContent = 'Plusieurs risques importants ont été détectés.';
+  }
+
+  function renderDuplicates(groups) {
+    const body = document.getElementById('body-duplicates');
+    const section = document.getElementById('section-duplicates');
+    document.getElementById('count-duplicates').textContent =
+      groups.length ? `${groups.length} mot${groups.length > 1 ? 's de passe' : ' de passe'}` : '';
+
+    if (groups.length === 0) {
+      section.classList.add('empty');
+      body.innerHTML = `<div class="empty-state">✓ Aucun mot de passe n'est réutilisé sur plusieurs comptes.</div>`;
+      return;
+    }
+    section.classList.remove('empty');
+    section.classList.add('open');
+
+    body.innerHTML = groups.map((group, gi) => `
+      <div class="group-card">
+        <div class="group-top">
+          ${makeSecretChip(group[0].password, 'dup-' + gi)}
+          <span class="used-by">utilisé sur ${group.length} comptes</span>
+        </div>
+        <div class="account-list">
+          ${group.map(acc => `
+            <span class="account-pill ${fixedIds.has(acc.id) ? 'fixed' : ''}" data-fix-id="${acc.id}">
+              <span class="name">${escapeHtml(acc.name)}</span>
+              ${acc.username ? `<span class="user">${escapeHtml(acc.username)}</span>` : ''}
+              ${ageBadgeHtml(acc.revisionDate)}
+              ${fixCheckHtml(acc.id)}
+            </span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderWeak(weakItems) {
+    const body = document.getElementById('body-weak');
+    const section = document.getElementById('section-weak');
+    document.getElementById('count-weak').textContent = weakItems.length ? `${weakItems.length} comptes` : '';
+
+    if (weakItems.length === 0) {
+      section.classList.add('empty');
+      body.innerHTML = `<div class="empty-state">✓ Aucun mot de passe faible détecté.</div>`;
+      return;
+    }
+    section.classList.remove('empty');
+    section.classList.add('open');
+
+    body.innerHTML = weakItems.map((it, i) => {
+      const pct = Math.min(100, (it.analysis.score + 1) * 20);
+      const barColor = it.analysis.score === 0 ? 'var(--danger)' : 'var(--warning)';
+      return `
+        <div class="weak-row ${fixedIds.has(it.id) ? 'fixed' : ''}" data-fix-id="${it.id}">
+          <div class="info">
+            <div class="name">${escapeHtml(it.name)}</div>
+            ${it.username ? `<div class="user">${escapeHtml(it.username)}</div>` : ''}
+          </div>
+          ${ageBadgeHtml(it.revisionDate)}
+          ${makeSecretChip(it.password, 'weak-' + i)}
+          <div class="strength-bar"><div class="fill" style="width:${pct}%;background:${barColor}"></div></div>
+          <span class="strength-tag s${it.analysis.score}">${it.analysis.label}</span>
+          ${fixCheckHtml(it.id)}
+        </div>`;
+    }).join('');
+  }
+
+  function renderReusedLogins(groups) {
+    const body = document.getElementById('body-logins');
+    const section = document.getElementById('section-logins');
+    document.getElementById('count-logins').textContent = groups.length ? `${groups.length} identifiants` : '';
+
+    if (groups.length === 0) {
+      section.classList.add('empty');
+      body.innerHTML = `<div class="empty-state">✓ Chaque identifiant n'est utilisé que sur un seul compte.</div>`;
+      return;
+    }
+    section.classList.remove('empty');
+
+    body.innerHTML = groups.map(group => `
+      <div class="group-card">
+        <div class="group-top">
+          <span class="secret-chip"><span class="chip-text">${escapeHtml(group[0].username)}</span></span>
+          <span class="used-by">réutilisé sur ${group.length} comptes</span>
+        </div>
+        <div class="account-list">
+          ${group.map(acc => `<span class="account-pill"><span class="name">${escapeHtml(acc.name)}</span></span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  let currentItems = [];
+
+  function renderAll(result) {
+    currentItems = result.items;
+    document.getElementById('stat-total').textContent = result.items.length;
+    document.getElementById('stat-duplicates').textContent = result.duplicateGroups.length;
+    document.getElementById('stat-duplicates-sub').textContent =
+      result.duplicateGroups.length ? `${result.duplicateAccountCount} comptes concernés` : 'Aucun';
+    document.getElementById('stat-weak').textContent = result.weakItems.length;
+
+    flaggedIds = new Set([
+      ...result.duplicateGroups.flat().map(a => a.id),
+      ...result.weakItems.map(a => a.id)
+    ]);
+
+    renderScoreGauge(result.score);
+    renderDuplicates(result.duplicateGroups);
+    renderWeak(result.weakItems);
+    renderReusedLogins(result.reusedLoginGroups);
+    updateProgress();
+  }
+
+  // ---------- Chargement du fichier ----------
+
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('file-input');
+  const errorMsg = document.getElementById('error-msg');
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.style.display = 'block';
+  }
+  function clearError() {
+    errorMsg.style.display = 'none';
+  }
+
+  function handleFile(file) {
+    clearError();
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const items = parseVault(e.target.result);
+        const result = runAnalysis(items);
+        document.getElementById('filename-label').textContent = file.name;
+        dropzone.style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        renderAll(result);
+      } catch (err) {
+        showError(err.message || "Impossible d'analyser ce fichier.");
+      }
+    };
+    reader.onerror = () => showError('Impossible de lire ce fichier.');
+    reader.readAsText(file);
+  }
+
+  document.getElementById('browse-btn').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+  dropzone.addEventListener('click', (e) => {
+    if (e.target.id === 'browse-btn') return;
+    fileInput.click();
+  });
+
+  ['dragenter', 'dragover'].forEach(evt =>
+    dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); })
+  );
+  ['dragleave', 'drop'].forEach(evt =>
+    dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); })
+  );
+  dropzone.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files[0];
+    handleFile(file);
+  });
+
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  const searchToggle = document.getElementById('search-toggle');
+
+  searchToggle.addEventListener('click', () => {
+    searchInput.type = searchInput.type === 'password' ? 'text' : 'password';
+  });
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value;
+    if (!query) {
+      searchResults.innerHTML = '';
+      return;
+    }
+    const matches = currentItems.filter(it => it.password === query);
+    if (matches.length === 0) {
+      searchResults.innerHTML = `<p class="search-summary nomatch">Aucun compte n'utilise ce mot de passe.</p>`;
+      return;
+    }
+    searchResults.innerHTML = `
+      <p class="search-summary match">${matches.length} compte${matches.length > 1 ? 's' : ''} ${matches.length > 1 ? 'utilisent' : 'utilise'} exactement ce mot de passe :</p>
+      <div class="account-list">
+        ${matches.map(acc => `
+          <span class="account-pill">
+            <span class="name">${escapeHtml(acc.name)}</span>
+            ${acc.username ? `<span class="user">${escapeHtml(acc.username)}</span>` : ''}
+          </span>`).join('')}
+      </div>`;
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    document.getElementById('dashboard').style.display = 'none';
+    dropzone.style.display = 'block';
+    fileInput.value = '';
+    clearError();
+    searchInput.value = '';
+    searchResults.innerHTML = '';
+  });
+</script>
+
+</body>
+</html>
