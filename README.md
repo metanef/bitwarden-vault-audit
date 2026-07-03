@@ -1,75 +1,75 @@
-# 🔐 Audit de coffre-fort
+# 🔐 Vault Audit
 
-Un outil d'audit de sécurité pour votre coffre-fort **Bitwarden**, inspiré du rapport de santé des mots de passe premium — mais **100 % local, gratuit et open source**.
+A security audit tool for your **Bitwarden** vault, inspired by the premium password health report — but **100% local, free, and open source**.
 
-Aucune donnée ne quitte jamais votre navigateur : pas de serveur, pas d'API, pas de tracking.
+No data ever leaves your browser: no server, no API, no tracking.
 
 ![100% local](https://img.shields.io/badge/données-100%25%20locales-3fc98a)
-![Aucune dépendance](https://img.shields.io/badge/dépendances-aucune-4f7cff)
-![Licence MIT](https://img.shields.io/badge/licence-MIT-8b90a3)
+![No dependencies](https://img.shields.io/badge/dépendances-aucune-4f7cff)
+![MIT License](https://img.shields.io/badge/licence-MIT-8b90a3)
 
 ---
 
-## ✨ Fonctionnalités
+## ✨ Features
 
-- **Score global du coffre-fort** — une jauge synthétique de 0 à 100 basée sur les mots de passe faibles, dupliqués et réutilisés
-- **Détection des mots de passe dupliqués** — regroupe automatiquement les comptes qui partagent le même mot de passe
-- **Détection des mots de passe faibles** — calcul d'entropie réelle (longueur × diversité de caractères) + liste de mots de passe trop communs
-- **Détection des identifiants réutilisés** — repère les logins/emails utilisés sur plusieurs comptes
-- **Recherche par mot de passe** — colle un mot de passe et retrouve instantanément tous les comptes qui l'utilisent
-- **Âge des mots de passe** — affiche depuis combien de temps chaque élément n'a pas été modifié
-- **Suivi de progression** — cochez les comptes corrigés au fur et à mesure, avec une barre de progression sauvegardée localement
-- **Interface sombre** inspirée du design de Bitwarden
+- **Global vault score** — a synthetic gauge from 0 to 100 based on weak, duplicated, and reused passwords
+- **Duplicate password detection** — automatically groups accounts sharing the exact same password
+- **Weak password detection** — real entropy calculation (length × character diversity) + list of overly common passwords
+- **Reused username detection** — spots logins/emails used across multiple accounts
+- **Password lookup** — paste a password to instantly find all accounts using it
+- **Password age** — displays how long it has been since each item was last modified
+- **Progress tracking** — check off fixed accounts as you go, with a progress bar saved locally
+- **Dark mode interface** inspired by Bitwarden's design
 
-## 🚀 Utilisation
+## 🚀 Usage
 
-1. Dans Bitwarden : **Paramètres → Outils d'export → Exporter le coffre**, au format **JSON** (non chiffré)
-2. Ouvrez `audit-coffre-fort.html` en le double-cliquant (aucune installation, aucun serveur requis)
-3. Glissez-déposez le fichier JSON exporté dans la zone prévue, ou cliquez pour le sélectionner
-4. Parcourez le rapport et corrigez les comptes à risque
+1. In Bitwarden: **Settings → Export Vault → Export**, in **JSON** format (unencrypted)
+2. Open `audit-coffre-fort.html` by double-clicking it (no installation, no server required)
+3. Drag and drop the exported JSON file into the designated area, or click to select it
+4. Browse the report and fix high-risk accounts
 
-> ⚠️ Une fois l'analyse terminée, pensez à supprimer le fichier JSON exporté : il contient tous vos mots de passe en clair.
+> ⚠️ Once the analysis is complete, remember to delete the exported JSON file: it contains all your passwords in plain text.
 
-## 🔒 Confidentialité
+## 🔒 Privacy
 
-Ce projet est un **fichier HTML unique**, sans build, sans framework, sans dépendance externe autre que les polices Google Fonts (chargées via CDN, uniquement pour l'affichage).
+This project is a **single HTML file**, with no build, no framework, and no external dependencies other than Google Fonts (loaded via CDN, strictly for display purposes).
 
-- Aucune requête réseau n'est effectuée avec vos données
-- Aucun cookie, aucun tracker
-- La seule donnée persistée est la liste des comptes que vous avez cochés comme « corrigés », stockée dans le `localStorage` de votre navigateur — jamais transmise nulle part
+- No network requests are made with your data
+- No cookies, no trackers
+- The only persisted data is the list of accounts you have checked as "fixed", stored in your browser's `localStorage` — and never transmitted anywhere
 
-Vous pouvez vérifier ceci vous-même : ouvrez le code source, il n'y a aucun `fetch` ni `XMLHttpRequest` vers un serveur tiers.
+You can verify this yourself: open the source code, there is no `fetch` or `XMLHttpRequest` to any third-party server.
 
-## 🧮 Comment le score est calculé
+## 🧮 How the score is calculated
 
-Le score global (0-100) est une moyenne pondérée basée sur trois facteurs, rapportés au nombre total de comptes :
+The global score (0-100) is a weighted average based on three factors, relative to the total number of accounts:
 
-- **50 %** — proportion de mots de passe faibles ou communs
-- **35 %** — proportion de comptes utilisant un mot de passe dupliqué
-- **15 %** — proportion de comptes utilisant un identifiant réutilisé
+- **50 %** — proportion of weak or common passwords
+- **35 %** — proportion of accounts using a duplicated password
+- **15 %** — proportion of accounts using a reused username
 
-Un score de 100 signifie qu'aucun problème n'a été détecté.
+A score of 100 means no issues were detected.
 
-## 🛠️ Stack technique
+## 🛠️ Tech stack
 
-- HTML / CSS / JavaScript vanilla — aucun framework, aucune étape de build
-- Police [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk), [Inter](https://fonts.google.com/specimen/Inter) et [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono)
+- Vanilla HTML / CSS / JavaScript — no frameworks, no build steps
+- Fonts [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk), [Inter](https://fonts.google.com/specimen/Inter) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono)
 
-## 📋 Limitations connues
+## 📋 Known limitations
 
-- L'export Bitwarden doit être au format **JSON non chiffré** (le format CSV n'est pas supporté)
-- L'« âge » affiché correspond à la date de dernière modification de la fiche dans Bitwarden (`revisionDate`), qui peut avoir été mise à jour pour une raison autre que le changement du mot de passe
-- La progression des corrections est liée au navigateur utilisé : elle n'est pas synchronisée entre appareils
+- The Bitwarden export must be in **unencrypted JSON** format (CSV format is not supported)
+- The displayed "age" corresponds to the last modification date of the entry in Bitwarden (`revisionDate`), which might have been updated for reasons other than changing the password itself
+- Fix progression is tied to the browser used: it is not synchronized across devices
 
-## 🤝 Contribuer
+## 🤝 Contributing
 
-Les suggestions et pull requests sont bienvenues. Quelques idées d'améliorations possibles :
+Suggestions and pull requests are welcome. A few ideas for potential improvements:
 
-- Détection de mots de passe similaires (pas seulement identiques)
-- Export du rapport en PDF/CSV
-- Filtrage par dossier Bitwarden
-- Marquage de comptes comme « critiques » pour les prioriser
+- Detection of similar passwords (not just identical ones)
+- Exporting the report to PDF/CSV
+- Filtering by Bitwarden folder
+- Marking specific accounts (banks, taxes, etc) as "critical" to prioritize them
 
-## 📄 Licence
+## 📄 License
 
-MIT — libre d'utilisation, de modification et de distribution.
+MIT — free to use, modify, and distribute.
