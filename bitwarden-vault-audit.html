@@ -99,6 +99,43 @@
 
   .badge-local svg { width: 12px; height: 12px; }
 
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .lang-switch {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .lang-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+  }
+
+  .lang-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .lang-btn:hover:not(.active) {
+    color: var(--text);
+  }
+
   /* ---------- Dropzone ---------- */
 
   #dropzone {
@@ -599,13 +636,19 @@
         <path d="M17 18.2V21" stroke="#4f7cff" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
       <div class="brand-text">
-        <h1>Audit de coffre-fort</h1>
-        <p>Détection des mots de passe faibles, dupliqués et réutilisés</p>
+        <h1 data-i18n="brandTitle">Audit de coffre-fort</h1>
+        <p data-i18n="brandSubtitle">Détection des mots de passe faibles, dupliqués et réutilisés</p>
       </div>
     </div>
-    <div class="badge-local">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" stroke="currentColor" stroke-width="2"/></svg>
-      100% local
+    <div class="header-right">
+      <div class="lang-switch" id="lang-switch">
+        <button type="button" class="lang-btn" data-lang="fr">FR</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <div class="badge-local">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" stroke="currentColor" stroke-width="2"/></svg>
+        <span data-i18n="badgeLocal">100% local</span>
+      </div>
     </div>
   </header>
 
@@ -613,18 +656,18 @@
     <div class="icon">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0-11l-4 4m4-4l4 4M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="#4f7cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <h2>Glissez votre export Bitwarden ici</h2>
-    <p>Format JSON non chiffré, généré depuis Bitwarden<br>(Paramètres → Exporter des données)</p>
-    <button class="btn" type="button" id="browse-btn">Choisir un fichier</button>
+    <h2 data-i18n="dropzoneTitle">Glissez votre export Bitwarden ici</h2>
+    <p data-i18n-html="dropzoneDesc">Format JSON non chiffré, généré depuis Bitwarden<br>(Paramètres → Exporter des données)</p>
+    <button class="btn" type="button" id="browse-btn" data-i18n="browseBtn">Choisir un fichier</button>
     <input type="file" id="file-input" accept=".json,application/json">
     <div id="error-msg"></div>
-    <p class="hint" style="margin-top:24px;">Aucune donnée n'est envoyée sur un serveur — tout est traité dans votre navigateur.</p>
+    <p class="hint" style="margin-top:24px;" data-i18n="dropzoneHint">Aucune donnée n'est envoyée sur un serveur — tout est traité dans votre navigateur.</p>
   </div>
 
   <div id="dashboard">
     <div class="toolbar">
       <span class="filename" id="filename-label"></span>
-      <button class="btn btn-ghost" id="reset-btn">Charger un autre fichier</button>
+      <button class="btn btn-ghost" id="reset-btn" data-i18n="resetBtn">Charger un autre fichier</button>
     </div>
 
     <div class="stats-grid">
@@ -637,40 +680,40 @@
           <div class="score-num" id="gauge-num">–</div>
         </div>
         <div class="score-text">
-          <p class="label" style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;">Score du coffre-fort</p>
+          <p class="label" style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;" data-i18n="scoreLabel">Score du coffre-fort</p>
           <p class="verdict" id="score-verdict">—</p>
         </div>
       </div>
       <div class="stat-card">
-        <p class="label">Comptes analysés</p>
+        <p class="label" data-i18n="statTotal">Comptes analysés</p>
         <div class="value" id="stat-total">0</div>
       </div>
       <div class="stat-card">
-        <p class="label">Mots de passe dupliqués</p>
+        <p class="label" data-i18n="statDuplicates">Mots de passe dupliqués</p>
         <div class="value danger" id="stat-duplicates">0</div>
         <p class="sub" id="stat-duplicates-sub"></p>
       </div>
       <div class="stat-card">
-        <p class="label">Mots de passe faibles</p>
+        <p class="label" data-i18n="statWeak">Mots de passe faibles</p>
         <div class="value warning" id="stat-weak">0</div>
       </div>
     </div>
 
     <div class="progress-card" id="progress-card">
       <div class="progress-top">
-        <p class="label">Progression des corrections</p>
+        <p class="label" data-i18n="progressLabel">Progression des corrections</p>
         <span class="progress-count" id="progress-count">0 / 0</span>
       </div>
       <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
     </div>
 
     <div class="search-card">
-      <p class="label">Rechercher un mot de passe précis</p>
+      <p class="label" data-i18n="searchLabel">Rechercher un mot de passe précis</p>
       <div class="search-row">
         <div class="search-input-wrap">
           <svg class="icon-search" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input type="password" id="search-input" placeholder="Colle ou tape un mot de passe...">
-          <button type="button" id="search-toggle" title="Afficher / masquer">
+          <input type="password" id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Colle ou tape un mot de passe...">
+          <button type="button" id="search-toggle" data-i18n-title="toggleShowHide" title="Afficher / masquer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
           </button>
         </div>
@@ -681,7 +724,7 @@
     <div class="section" id="section-duplicates">
       <div class="section-header" onclick="toggleSection('section-duplicates')">
         <span class="dot danger"></span>
-        <h3>Mots de passe réutilisés</h3>
+        <h3 data-i18n="sectionDuplicates">Mots de passe réutilisés</h3>
         <span class="count" id="count-duplicates"></span>
         <span class="chev">▸</span>
       </div>
@@ -691,7 +734,7 @@
     <div class="section" id="section-weak">
       <div class="section-header" onclick="toggleSection('section-weak')">
         <span class="dot warning"></span>
-        <h3>Mots de passe faibles</h3>
+        <h3 data-i18n="sectionWeak">Mots de passe faibles</h3>
         <span class="count" id="count-weak"></span>
         <span class="chev">▸</span>
       </div>
@@ -701,14 +744,14 @@
     <div class="section" id="section-logins">
       <div class="section-header" onclick="toggleSection('section-logins')">
         <span class="dot accent"></span>
-        <h3>Identifiants réutilisés</h3>
+        <h3 data-i18n="sectionLogins">Identifiants réutilisés</h3>
         <span class="count" id="count-logins"></span>
         <span class="chev">▸</span>
       </div>
       <div class="section-body" id="body-logins"></div>
     </div>
 
-    <footer class="note">
+    <footer class="note" data-i18n="footerNote">
       Cet outil ne stocke, n'envoie ni ne conserve aucune donnée. Fermez simplement l'onglet pour tout effacer.
     </footer>
   </div>
@@ -716,6 +759,156 @@
 </div>
 
 <script>
+  // ---------- Internationalisation ----------
+
+  const I18N = {
+    fr: {
+      pageTitle: "Audit de coffre-fort — 100% local",
+      brandTitle: "Audit de coffre-fort",
+      brandSubtitle: "Détection des mots de passe faibles, dupliqués et réutilisés",
+      badgeLocal: "100% local",
+      dropzoneTitle: "Glissez votre export Bitwarden ici",
+      dropzoneDesc: "Format JSON non chiffré, généré depuis Bitwarden<br>(Paramètres → Exporter des données)",
+      browseBtn: "Choisir un fichier",
+      dropzoneHint: "Aucune donnée n'est envoyée sur un serveur — tout est traité dans votre navigateur.",
+      resetBtn: "Charger un autre fichier",
+      scoreLabel: "Score du coffre-fort",
+      verdictGood: "Votre coffre-fort est globalement sain.",
+      verdictMid: "Des points d'attention méritent d'être corrigés.",
+      verdictBad: "Plusieurs risques importants ont été détectés.",
+      statTotal: "Comptes analysés",
+      statDuplicates: "Mots de passe dupliqués",
+      statWeak: "Mots de passe faibles",
+      none: "Aucun",
+      accountsConcerned: "{n} comptes concernés",
+      progressLabel: "Progression des corrections",
+      searchLabel: "Rechercher un mot de passe précis",
+      searchPlaceholder: "Colle ou tape un mot de passe...",
+      toggleShowHide: "Afficher / masquer",
+      searchNoMatch: "Aucun compte n'utilise ce mot de passe.",
+      searchMatchOne: "1 compte utilise exactement ce mot de passe :",
+      searchMatchMany: "{n} comptes utilisent exactement ce mot de passe :",
+      sectionDuplicates: "Mots de passe réutilisés",
+      sectionWeak: "Mots de passe faibles",
+      sectionLogins: "Identifiants réutilisés",
+      countDupOne: "{n} mot de passe",
+      countDupMany: "{n} mots de passe",
+      countAccountsN: "{n} comptes",
+      countLoginsN: "{n} identifiants",
+      emptyDuplicates: "✓ Aucun mot de passe n'est réutilisé sur plusieurs comptes.",
+      emptyWeak: "✓ Aucun mot de passe faible détecté.",
+      emptyLogins: "✓ Chaque identifiant n'est utilisé que sur un seul compte.",
+      usedByAccounts: "utilisé sur {n} comptes",
+      reusedByAccounts: "réutilisé sur {n} comptes",
+      fixLabel: "Corrigé",
+      ageToday: "aujourd'hui",
+      ageDays: "il y a {n} j",
+      ageMonths: "il y a {n} mois",
+      ageYearOne: "il y a {n} an",
+      ageYearsMany: "il y a {n} ans",
+      ageTitle: "Dernière modification de cet élément dans Bitwarden",
+      footerNote: "Cet outil ne stocke, n'envoie ni ne conserve aucune donnée. Fermez simplement l'onglet pour tout effacer.",
+      errInvalidJson: "Le fichier n'est pas un JSON valide.",
+      errNotBitwarden: "Ce fichier ne ressemble pas à un export Bitwarden (clé 'items' introuvable).",
+      errNoLogin: "Aucun identifiant (type 'login') trouvé dans ce fichier.",
+      errReadFile: "Impossible de lire ce fichier.",
+      errAnalyze: "Impossible d'analyser ce fichier.",
+      defaultName: "Sans nom",
+      strength0: "Très faible",
+      strength1: "Faible",
+      strength2: "Correct",
+      strength3: "Fort",
+      strength4: "Très fort"
+    },
+    en: {
+      pageTitle: "Vault Audit — 100% local",
+      brandTitle: "Vault Audit",
+      brandSubtitle: "Detect weak, duplicate and reused passwords",
+      badgeLocal: "100% local",
+      dropzoneTitle: "Drop your Bitwarden export here",
+      dropzoneDesc: "Unencrypted JSON format, exported from Bitwarden<br>(Settings → Export vault)",
+      browseBtn: "Choose a file",
+      dropzoneHint: "No data is ever sent to a server — everything runs in your browser.",
+      resetBtn: "Load another file",
+      scoreLabel: "Vault score",
+      verdictGood: "Your vault is in good shape overall.",
+      verdictMid: "A few things deserve your attention.",
+      verdictBad: "Several significant risks were detected.",
+      statTotal: "Accounts analyzed",
+      statDuplicates: "Duplicate passwords",
+      statWeak: "Weak passwords",
+      none: "None",
+      accountsConcerned: "{n} accounts affected",
+      progressLabel: "Fix progress",
+      searchLabel: "Search for a specific password",
+      searchPlaceholder: "Paste or type a password...",
+      toggleShowHide: "Show / hide",
+      searchNoMatch: "No account uses this password.",
+      searchMatchOne: "1 account uses exactly this password:",
+      searchMatchMany: "{n} accounts use exactly this password:",
+      sectionDuplicates: "Reused passwords",
+      sectionWeak: "Weak passwords",
+      sectionLogins: "Reused logins",
+      countDupOne: "{n} password",
+      countDupMany: "{n} passwords",
+      countAccountsN: "{n} accounts",
+      countLoginsN: "{n} logins",
+      emptyDuplicates: "✓ No password is reused across accounts.",
+      emptyWeak: "✓ No weak password detected.",
+      emptyLogins: "✓ Each login is only used on a single account.",
+      usedByAccounts: "used on {n} accounts",
+      reusedByAccounts: "reused on {n} accounts",
+      fixLabel: "Fixed",
+      ageToday: "today",
+      ageDays: "{n}d ago",
+      ageMonths: "{n} months ago",
+      ageYearOne: "{n} year ago",
+      ageYearsMany: "{n} years ago",
+      ageTitle: "Last modified date of this item in Bitwarden",
+      footerNote: "This tool doesn't store, send, or retain any data. Just close the tab to erase everything.",
+      errInvalidJson: "This file is not valid JSON.",
+      errNotBitwarden: "This doesn't look like a Bitwarden export (missing 'items' key).",
+      errNoLogin: "No login items found in this file.",
+      errReadFile: "Could not read this file.",
+      errAnalyze: "Could not analyze this file.",
+      defaultName: "Unnamed",
+      strength0: "Very weak",
+      strength1: "Weak",
+      strength2: "Fair",
+      strength3: "Strong",
+      strength4: "Very strong"
+    }
+  };
+
+  let currentLang = (function() {
+    try { return localStorage.getItem('auditLang') || 'fr'; }
+    catch (e) { return 'fr'; }
+  })();
+
+  function t(key, vars) {
+    let str = (I18N[currentLang] && I18N[currentLang][key]) || I18N.fr[key] || key;
+    if (vars) {
+      Object.keys(vars).forEach(k => {
+        str = str.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]);
+      });
+    }
+    return str;
+  }
+
+  function strengthLabel(score) {
+    return t('strength' + score);
+  }
+
+  function applyTranslations() {
+    document.documentElement.lang = currentLang;
+    document.title = t('pageTitle');
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === currentLang));
+  }
+
   // ---------- Analyse des mots de passe ----------
 
   const COMMON_PASSWORDS = new Set([
@@ -726,7 +919,7 @@
   ]);
 
   function analyzePassword(pw) {
-    if (!pw) return { score: 0, label: 'Vide', entropy: 0 };
+    if (!pw) return { score: 0, entropy: 0 };
     let charset = 0;
     if (/[a-z]/.test(pw)) charset += 26;
     if (/[A-Z]/.test(pw)) charset += 26;
@@ -741,24 +934,23 @@
     else if (entropy < 80) score = 3;
     else score = 4;
 
-    const labels = ['Très faible', 'Faible', 'Correct', 'Fort', 'Très fort'];
-    return { score, label: labels[score], entropy: Math.round(entropy) };
+    return { score, entropy: Math.round(entropy) };
   }
 
   function parseVault(text) {
     let data;
     try { data = JSON.parse(text); }
-    catch (e) { throw new Error("Le fichier n'est pas un JSON valide."); }
+    catch (e) { throw new Error(t('errInvalidJson')); }
 
     if (!data || !Array.isArray(data.items)) {
-      throw new Error("Ce fichier ne ressemble pas à un export Bitwarden (clé 'items' introuvable).");
+      throw new Error(t('errNotBitwarden'));
     }
 
     const items = data.items
       .filter(it => it && it.type === 1 && it.login && it.login.password)
       .map(it => ({
         id: it.id,
-        name: it.name || 'Sans nom',
+        name: it.name || t('defaultName'),
         username: (it.login.username || '').trim(),
         password: it.login.password,
         uri: (it.login.uris && it.login.uris[0] && it.login.uris[0].uri) || '',
@@ -766,7 +958,7 @@
       }));
 
     if (items.length === 0) {
-      throw new Error("Aucun identifiant (type 'login') trouvé dans ce fichier.");
+      throw new Error(t('errNoLogin'));
     }
     return items;
   }
@@ -814,14 +1006,12 @@
     if (isNaN(date.getTime())) return null;
     const days = Math.floor((Date.now() - date.getTime()) / 86400000);
     if (days < 0) return null;
-    let text;
-    if (days < 30) text = days <= 1 ? "aujourd'hui" : `il y a ${days} j`;
-    else if (days < 365) text = `il y a ${Math.floor(days / 30)} mois`;
-    else {
-      const years = Math.floor(days / 365);
-      text = `il y a ${years} an${years > 1 ? 's' : ''}`;
-    }
-    return { text, years: days / 365 };
+    let unit, value;
+    if (days < 2) { unit = 'today'; value = 0; }
+    else if (days < 30) { unit = 'days'; value = days; }
+    else if (days < 365) { unit = 'months'; value = Math.floor(days / 30); }
+    else { unit = 'years'; value = Math.floor(days / 365); }
+    return { unit, value, years: days / 365 };
   }
 
   function ageBadgeHtml(dateStr) {
@@ -830,7 +1020,12 @@
     let cls = '';
     if (age.years >= 3) cls = 'age-old';
     else if (age.years >= 1.5) cls = 'age-mid';
-    return `<span class="age-tag ${cls}" title="Dernière modification de cet élément dans Bitwarden">${age.text}</span>`;
+    let text;
+    if (age.unit === 'today') text = t('ageToday');
+    else if (age.unit === 'days') text = t('ageDays', { n: age.value });
+    else if (age.unit === 'months') text = t('ageMonths', { n: age.value });
+    else text = t(age.value === 1 ? 'ageYearOne' : 'ageYearsMany', { n: age.value });
+    return `<span class="age-tag ${cls}" title="${t('ageTitle')}">${text}</span>`;
   }
 
   // ---------- Suivi des corrections ----------
@@ -855,7 +1050,7 @@
     return `
       <label class="fix-check">
         <input type="checkbox" ${checked} onchange="toggleFixed('${id}')">
-        <span>Corrigé</span>
+        <span>${t('fixLabel')}</span>
       </label>`;
   }
 
@@ -894,7 +1089,7 @@
     return `
       <span class="secret-chip" data-pw="${escapeHtml(pw)}" id="chip-${id}">
         <span class="chip-text">${maskPassword(pw)}</span>
-        <button type="button" onclick="toggleReveal('chip-${id}')" title="Afficher / masquer">
+        <button type="button" onclick="toggleReveal('chip-${id}')" title="${t('toggleShowHide')}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
         </button>
       </span>`;
@@ -927,20 +1122,20 @@
     document.getElementById('gauge-num').textContent = score;
 
     const verdictEl = document.getElementById('score-verdict');
-    if (score >= 80) verdictEl.textContent = 'Votre coffre-fort est globalement sain.';
-    else if (score >= 55) verdictEl.textContent = "Des points d'attention méritent d'être corrigés.";
-    else verdictEl.textContent = 'Plusieurs risques importants ont été détectés.';
+    if (score >= 80) verdictEl.textContent = t('verdictGood');
+    else if (score >= 55) verdictEl.textContent = t('verdictMid');
+    else verdictEl.textContent = t('verdictBad');
   }
 
   function renderDuplicates(groups) {
     const body = document.getElementById('body-duplicates');
     const section = document.getElementById('section-duplicates');
     document.getElementById('count-duplicates').textContent =
-      groups.length ? `${groups.length} mot${groups.length > 1 ? 's de passe' : ' de passe'}` : '';
+      groups.length ? t(groups.length === 1 ? 'countDupOne' : 'countDupMany', { n: groups.length }) : '';
 
     if (groups.length === 0) {
       section.classList.add('empty');
-      body.innerHTML = `<div class="empty-state">✓ Aucun mot de passe n'est réutilisé sur plusieurs comptes.</div>`;
+      body.innerHTML = `<div class="empty-state">${t('emptyDuplicates')}</div>`;
       return;
     }
     section.classList.remove('empty');
@@ -950,7 +1145,7 @@
       <div class="group-card">
         <div class="group-top">
           ${makeSecretChip(group[0].password, 'dup-' + gi)}
-          <span class="used-by">utilisé sur ${group.length} comptes</span>
+          <span class="used-by">${t('usedByAccounts', { n: group.length })}</span>
         </div>
         <div class="account-list">
           ${group.map(acc => `
@@ -968,11 +1163,11 @@
   function renderWeak(weakItems) {
     const body = document.getElementById('body-weak');
     const section = document.getElementById('section-weak');
-    document.getElementById('count-weak').textContent = weakItems.length ? `${weakItems.length} comptes` : '';
+    document.getElementById('count-weak').textContent = weakItems.length ? t('countAccountsN', { n: weakItems.length }) : '';
 
     if (weakItems.length === 0) {
       section.classList.add('empty');
-      body.innerHTML = `<div class="empty-state">✓ Aucun mot de passe faible détecté.</div>`;
+      body.innerHTML = `<div class="empty-state">${t('emptyWeak')}</div>`;
       return;
     }
     section.classList.remove('empty');
@@ -990,7 +1185,7 @@
           ${ageBadgeHtml(it.revisionDate)}
           ${makeSecretChip(it.password, 'weak-' + i)}
           <div class="strength-bar"><div class="fill" style="width:${pct}%;background:${barColor}"></div></div>
-          <span class="strength-tag s${it.analysis.score}">${it.analysis.label}</span>
+          <span class="strength-tag s${it.analysis.score}">${strengthLabel(it.analysis.score)}</span>
           ${fixCheckHtml(it.id)}
         </div>`;
     }).join('');
@@ -999,11 +1194,11 @@
   function renderReusedLogins(groups) {
     const body = document.getElementById('body-logins');
     const section = document.getElementById('section-logins');
-    document.getElementById('count-logins').textContent = groups.length ? `${groups.length} identifiants` : '';
+    document.getElementById('count-logins').textContent = groups.length ? t('countLoginsN', { n: groups.length }) : '';
 
     if (groups.length === 0) {
       section.classList.add('empty');
-      body.innerHTML = `<div class="empty-state">✓ Chaque identifiant n'est utilisé que sur un seul compte.</div>`;
+      body.innerHTML = `<div class="empty-state">${t('emptyLogins')}</div>`;
       return;
     }
     section.classList.remove('empty');
@@ -1012,7 +1207,7 @@
       <div class="group-card">
         <div class="group-top">
           <span class="secret-chip"><span class="chip-text">${escapeHtml(group[0].username)}</span></span>
-          <span class="used-by">réutilisé sur ${group.length} comptes</span>
+          <span class="used-by">${t('reusedByAccounts', { n: group.length })}</span>
         </div>
         <div class="account-list">
           ${group.map(acc => `<span class="account-pill"><span class="name">${escapeHtml(acc.name)}</span></span>`).join('')}
@@ -1022,13 +1217,15 @@
   }
 
   let currentItems = [];
+  let lastResult = null;
 
   function renderAll(result) {
+    lastResult = result;
     currentItems = result.items;
     document.getElementById('stat-total').textContent = result.items.length;
     document.getElementById('stat-duplicates').textContent = result.duplicateGroups.length;
     document.getElementById('stat-duplicates-sub').textContent =
-      result.duplicateGroups.length ? `${result.duplicateAccountCount} comptes concernés` : 'Aucun';
+      result.duplicateGroups.length ? t('accountsConcerned', { n: result.duplicateAccountCount }) : t('none');
     document.getElementById('stat-weak').textContent = result.weakItems.length;
 
     flaggedIds = new Set([
@@ -1070,10 +1267,10 @@
         document.getElementById('dashboard').style.display = 'block';
         renderAll(result);
       } catch (err) {
-        showError(err.message || "Impossible d'analyser ce fichier.");
+        showError(err.message || t('errAnalyze'));
       }
     };
-    reader.onerror = () => showError('Impossible de lire ce fichier.');
+    reader.onerror = () => showError(t('errReadFile'));
     reader.readAsText(file);
   }
 
@@ -1112,11 +1309,11 @@
     }
     const matches = currentItems.filter(it => it.password === query);
     if (matches.length === 0) {
-      searchResults.innerHTML = `<p class="search-summary nomatch">Aucun compte n'utilise ce mot de passe.</p>`;
+      searchResults.innerHTML = `<p class="search-summary nomatch">${t('searchNoMatch')}</p>`;
       return;
     }
     searchResults.innerHTML = `
-      <p class="search-summary match">${matches.length} compte${matches.length > 1 ? 's' : ''} ${matches.length > 1 ? 'utilisent' : 'utilise'} exactement ce mot de passe :</p>
+      <p class="search-summary match">${t(matches.length === 1 ? 'searchMatchOne' : 'searchMatchMany', { n: matches.length })}</p>
       <div class="account-list">
         ${matches.map(acc => `
           <span class="account-pill">
@@ -1134,6 +1331,20 @@
     searchInput.value = '';
     searchResults.innerHTML = '';
   });
+
+  function setLang(lang) {
+    currentLang = lang;
+    try { localStorage.setItem('auditLang', lang); } catch (e) { /* stockage indisponible */ }
+    applyTranslations();
+    if (lastResult) renderAll(lastResult);
+    if (searchInput.value) searchInput.dispatchEvent(new Event('input'));
+  }
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => setLang(btn.dataset.lang));
+  });
+
+  applyTranslations();
 </script>
 
 </body>
